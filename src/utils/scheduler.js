@@ -277,12 +277,12 @@ function getLocalDateString(date) {
     return `${y}-${m}-${d}`;
 }
 
-function parseTimeString(timeStr) {
+export function parseTimeString(timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     return [h, m];
 }
 
-async function executeInBatches(items, processor, batchSize = 5, delayMs = 300) {
+export async function executeInBatches(items, processor, batchSize = 5, delayMs = 300) {
     let results = [];
     for (let i = 0; i < items.length; i += batchSize) {
         const batch = items.slice(i, i + batchSize);
