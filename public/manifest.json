@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Cai - Enterprise Calendar Intelligence",
+  "version": "1.0.0",
+  "description": "Enterprise-focused local-first calendar optimization and insights.",
+  "permissions": [
+    "identity",
+    "storage",
+    "sidePanel",
+    "alarms",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "919121547408-ejl4jo6q5q2lk59age1041fo8qekshha.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/calendar.readonly"
+    ]
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Cai"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "icons": {
+    "16": "vite.svg",
+    "48": "vite.svg",
+    "128": "vite.svg"
+  }
+}
