@@ -279,11 +279,11 @@ function parseTimeString(timeStr) {
 }
 
 function getWeekNumber(d) {
-    const date = new Date(d.getTime());
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-    const week1 = new Date(date.getFullYear(), 0, 4);
-    return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    // Absolute week number since Unix Epoch, starting on Sunday.
+    const SUNDAY_OFFSET = 4 * 86400000;
+    // Shift date to UTC to reliably ignore daylight savings when dividing by 7 days
+    const utcDate = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    return Math.floor((utcDate + SUNDAY_OFFSET) / 604800000);
 }
 
 function isThisWeek(date) {

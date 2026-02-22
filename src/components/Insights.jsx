@@ -5,9 +5,8 @@ const Insights = () => {
     const [weekOffset, setWeekOffset] = useState(0);
 
     useEffect(() => {
-        // In a real implementation, this would fetch from chrome.storage.local
-        // which is populated by the background service worker analyzing calendar events.
         if (chrome && chrome.storage) {
+            // Initial fetch
             chrome.storage.local.get(['caiInsights'], (result) => {
                 if (result.caiInsights && result.caiInsights[weekOffset]) {
                     setStats(result.caiInsights[weekOffset]);
@@ -15,6 +14,21 @@ const Insights = () => {
                     setStats(getMockStats(weekOffset));
                 }
             });
+
+            // Listen for background updates
+            const storageListener = (changes, namespace) => {
+                if (namespace === 'local' && changes.caiInsights?.newValue) {
+                    const newInsights = changes.caiInsights.newValue;
+                    if (newInsights[weekOffset]) {
+                        setStats(newInsights[weekOffset]);
+                    }
+                }
+            };
+
+            chrome.storage.onChanged.addListener(storageListener);
+            return () => {
+                chrome.storage.onChanged.removeListener(storageListener);
+            };
         } else {
             setStats(getMockStats(weekOffset));
         }
