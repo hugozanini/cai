@@ -11,7 +11,7 @@ const Insights = () => {
                 if (result.caiInsights && result.caiInsights[weekOffset]) {
                     setStats(result.caiInsights[weekOffset]);
                 } else {
-                    setStats(getMockStats(weekOffset));
+                    setStats(getEmptyStats());
                 }
             });
 
@@ -21,6 +21,8 @@ const Insights = () => {
                     const newInsights = changes.caiInsights.newValue;
                     if (newInsights[weekOffset]) {
                         setStats(newInsights[weekOffset]);
+                    } else {
+                        setStats(getEmptyStats());
                     }
                 }
             };
@@ -30,21 +32,17 @@ const Insights = () => {
                 chrome.storage.onChanged.removeListener(storageListener);
             };
         } else {
-            setStats(getMockStats(weekOffset));
+            setStats(getEmptyStats());
         }
     }, [weekOffset]);
 
-    const getMockStats = (offset) => {
-        // Generate some slightly different data based on week offset
-        const baseFocus = 12 + offset;
-        return {
-            focusTimeHours: Math.max(0, baseFocus),
-            focusTimeGoal: 15,
-            meetingsHours: Math.max(0, 14 - offset),
-            oneOnOneHours: Math.max(0, 5 - offset),
-            recurrentHours: Math.max(0, 8 - offset),
-        };
-    };
+    const getEmptyStats = () => ({
+        focusTimeHours: 0,
+        focusTimeGoal: 15,
+        meetingsHours: 0,
+        oneOnOneHours: 0,
+        recurrentHours: 0,
+    });
 
     const getWeekLabel = (offset) => {
         const today = new Date();

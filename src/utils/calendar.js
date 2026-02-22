@@ -2,9 +2,12 @@ const GOOGLE_CALENDAR_API_BASE = 'https://www.googleapis.com/calendar/v3';
 
 // Fetch events from Primary calendar for next 14 days
 export async function fetchCalendarEvents(token) {
-    const timeMin = new Date().toISOString();
-    let maxDate = new Date();
-    maxDate.setDate(maxDate.getDate() + 14);
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() - 21); // 3 weeks ago
+    const timeMin = minDate.toISOString();
+
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 21); // 3 weeks future
     const timeMax = maxDate.toISOString();
 
     const url = new URL(`${GOOGLE_CALENDAR_API_BASE}/calendars/primary/events`);
