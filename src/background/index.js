@@ -18,22 +18,35 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     }
 });
 
+let isScheduling = false;
+
 async function syncCalendarData() {
+    if (isScheduling) {
+        console.log('Scheduler is already running. Skipping overlapping execution.');
+        return;
+    }
+
+    isScheduling = true;
     console.log('Syncing calendar data...');
     try {
         const token = await getAuthToken();
         if (token) {
             console.log('Got auth token, fetching preferences from storage...');
-            chrome.storage.local.get(['caiPreferences'], async (result) => {
-                if (result.caiPreferences) {
-                    await runScheduler(token, result.caiPreferences);
-                } else {
-                    console.log('No Cai preferences found, skipping scheduler.');
-                }
+
+            const prefsResult = await new Promise(resolve => {
+                chrome.storage.local.get(['caiPreferences'], resolve);
             });
+
+            if (prefsResult.caiPreferences) {
+                await runScheduler(token, prefsResult.caiPreferences);
+            } else {
+                console.log('No Cai preferences found, skipping scheduler.');
+            }
         }
     } catch (error) {
         console.error('Failed to sync calendar:', error);
+    } finally {
+        isScheduling = false;
     }
 }
 
@@ -77,8 +90,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         getAuthToken().then(token => {
             return clearAllCaiEvents(token);
         }).then(count => {
-            // After clearing, force a sync so Insights recalculate to 0
-            syncCalendarData();
             sendResponse({ success: true, count });
         }).catch(err => {
             sendResponse({ success: false, error: err.message });
