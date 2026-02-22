@@ -34,12 +34,17 @@ const Planner = () => {
             chrome.storage.local.get(['caiPreferences'], (result) => {
                 const oldConfig = result.caiPreferences;
 
-                // If they reduced the goal, we need to clear events so the scheduler can rebuild
+                // If they changed core settings, we need to clear events so the scheduler can rebuild
                 const isGoalReduced = oldConfig && Number(config.focusTimeGoal) < Number(oldConfig.focusTimeGoal);
+                const isCoffeeChanged = oldConfig && config.coffeeBreakDuration !== oldConfig.coffeeBreakDuration;
+                const isLunchChanged = oldConfig && (config.lunchDuration !== oldConfig.lunchDuration || config.lunchPreference !== oldConfig.lunchPreference);
+                const isWorkHoursChanged = oldConfig && (config.workingHoursStart !== oldConfig.workingHoursStart || config.workingHoursEnd !== oldConfig.workingHoursEnd);
+
+                const needsRebuild = isGoalReduced || isCoffeeChanged || isLunchChanged || isWorkHoursChanged;
 
                 chrome.storage.local.set({ caiPreferences: config }, () => {
-                    if (isGoalReduced) {
-                        console.log('Focus goal reduced. Clearing events first...');
+                    if (needsRebuild) {
+                        console.log('Config changed requiring rebuild. Clearing events first...');
                         chrome.runtime.sendMessage({ type: 'CLEAR_EVENTS' }, () => {
                             chrome.runtime.sendMessage({ type: 'SYNC_NOW' });
                             setTimeout(() => setIsSaving(false), 500);
