@@ -79,29 +79,8 @@ const Insights = () => {
                 </div>
             </div>
 
-            {/* Focus Time Card */}
-            <div className="glass-panel" style={{ padding: '20px', marginBottom: '16px', borderRadius: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--accent-primary)' }}>Focus Time</h3>
-                    <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
-                        {stats.focusTimeHours} <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ {stats.focusTimeGoal} hrs</span>
-                    </span>
-                </div>
-
-                {/* Progress Bar */}
-                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{
-                        height: '100%',
-                        width: `${focusProgress}%`,
-                        background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))',
-                        borderRadius: '4px',
-                        transition: 'width 0.5s ease'
-                    }} />
-                </div>
-            </div>
-
             {/* Meetings Breakdown */}
-            <div className="glass-panel" style={{ padding: '20px', borderRadius: '12px' }}>
+            <div className="glass-panel" style={{ padding: '20px', marginBottom: '16px', borderRadius: '12px' }}>
                 <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: 'var(--accent-secondary)' }}>Time Breakdown</h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -128,6 +107,27 @@ const Insights = () => {
                         </span>
                         <span style={{ fontWeight: 'bold' }}>{stats.recurrentHours} hrs</span>
                     </div>
+                </div>
+            </div>
+
+            {/* Focus Time Card */}
+            <div className="glass-panel" style={{ padding: '20px', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--accent-primary)' }}>Focus Time</h3>
+                    <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
+                        {stats.focusTimeHours} <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ {stats.focusTimeGoal} hrs</span>
+                    </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{
+                        height: '100%',
+                        width: `${focusProgress}%`,
+                        background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))',
+                        borderRadius: '4px',
+                        transition: 'width 0.5s ease'
+                    }} />
                 </div>
             </div>
         </div>
