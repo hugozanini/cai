@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 const Insights = () => {
     const [stats, setStats] = useState(null);
     const [weekOffset, setWeekOffset] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         setIsLoading(true);
