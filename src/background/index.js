@@ -1,4 +1,4 @@
-import { runScheduler } from '../utils/scheduler.js';
+import { runScheduler, clearAllCaiEvents } from '../utils/scheduler.js';
 
 // Cai Background Service Worker
 
@@ -68,6 +68,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log('Manual sync triggered from UI');
         syncCalendarData();
         sendResponse({ success: true });
+        return true;
+    }
+
+    if (message.type === 'CLEAR_EVENTS') {
+        console.log('Clear Events triggered from UI');
+        getAuthToken().then(token => {
+            return clearAllCaiEvents(token);
+        }).then(count => {
+            // After clearing, force a sync so Insights recalculate to 0
+            syncCalendarData();
+            sendResponse({ success: true, count });
+        }).catch(err => {
+            sendResponse({ success: false, error: err.message });
+        });
         return true;
     }
 });

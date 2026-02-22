@@ -65,6 +65,22 @@ export async function createEvent(token, { summary, description, startTime, endT
     return response.json();
 }
 
+// Delete an event
+export async function deleteEvent(token, eventId) {
+    const response = await fetch(`${GOOGLE_CALENDAR_API_BASE}/calendars/primary/events/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to delete event: ${response.statusText}`);
+    }
+
+    return true;
+}
+
 // Simple Free/Busy analysis
 export function findFreeSlots(events, workStartHour = 9, workEndHour = 17) {
     // Simplified for V0: This should ideally analyze days and find empty gaps 
