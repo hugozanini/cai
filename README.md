@@ -1,4 +1,4 @@
-# Cai - Enterprise Calendar Intelligence
+# Cai - Calendar Intelligence
 
 Cai is an enterprise-focused, privacy-first alternative to cloud-based calendar managers like Reclaim.ai. Built entirely as a Google Chrome Extension, Cai brings intelligent calendar automation—auto-scheduling Focus Time, Lunches, and Coffee Breaks—directly into your browser. 
 

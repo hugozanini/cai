@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Cai - Enterprise Calendar Intelligence",
+  "name": "Cai - Calendar Intelligence",
   "version": "1.0.0",
   "description": "Enterprise-focused local-first calendar optimization and insights.",
   "permissions": [
