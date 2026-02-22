@@ -219,9 +219,6 @@ export async function runScheduler(token, preferences) {
 
         console.log('Cai Scheduler completed pass.');
 
-        // --- Calculate Insights ---
-        await computeInsights([...rawEvents, ...newEvents], preferences);
-
     } catch (err) {
         console.error('Error running scheduler:', err);
     }
@@ -259,83 +256,6 @@ export async function clearAllCaiEvents(token) {
     } catch (err) {
         console.error('Error clearing events:', err);
         throw err;
-    }
-}
-
-async function computeInsights(events, preferences) {
-    const focusGoal = preferences.focusTimeGoal || 15;
-    const insightsByWeek = {}; // Map of { offset: { focusTimeHours, meetingsHours, oneOnOneHours, recurrentHours } }
-
-    // Initialize current, past, and future weeks explicitly from -2 to +2
-    for (let i = -2; i <= 2; i++) {
-        insightsByWeek[i] = {
-            focusTimeHours: 0,
-            focusTimeGoal: focusGoal,
-            meetingsHours: 0,
-            oneOnOneHours: 0,
-            recurrentHours: 0
-        };
-    }
-
-    const currentWeekNum = getWeekNumber(new Date());
-
-    for (const ev of events) {
-        if (!ev.start || !ev.start.dateTime) continue;
-
-        // Skip events the user has declined
-        const selfAttendee = ev.attendees ? ev.attendees.find(a => a.self) : null;
-        if (selfAttendee && selfAttendee.responseStatus === 'declined') {
-            continue;
-        }
-
-        const start = new Date(ev.start.dateTime);
-        const evWeekNum = getWeekNumber(start);
-        const weekOffset = evWeekNum - currentWeekNum;
-
-        // We only care about +/- 2 weeks
-        if (weekOffset > 2 || weekOffset < -2) continue;
-        if (!insightsByWeek[weekOffset]) continue;
-
-        const durationHours = (new Date(ev.end.dateTime) - start) / 3600000;
-
-        const isFocus = (ev.summary || '').includes('Focus Time');
-        const isLunchOrBreak = (ev.summary || '').includes('Lunch') || (ev.summary || '').includes('Coffee');
-
-        if (isFocus) {
-            insightsByWeek[weekOffset].focusTimeHours += durationHours;
-        } else if (!isLunchOrBreak) {
-            const numAttendees = ev.attendees ? ev.attendees.length : 0;
-            // A meeting implies at least 2 attendees. Otherwise, it's a personal block.
-            const isMeeting = numAttendees > 1;
-
-            if (isMeeting) {
-                insightsByWeek[weekOffset].meetingsHours += durationHours;
-
-                // Check if it's a 1-on-1 (usually exactly 2 attendees counting self)
-                if (numAttendees === 2) {
-                    insightsByWeek[weekOffset].oneOnOneHours += durationHours;
-                }
-
-                // Check if recurrent
-                if (ev.recurringEventId || ev.recurrence) {
-                    insightsByWeek[weekOffset].recurrentHours += durationHours;
-                }
-            }
-        }
-    }
-
-    // Format numbers nicely
-    for (const key in insightsByWeek) {
-        insightsByWeek[key].focusTimeHours = Math.round(insightsByWeek[key].focusTimeHours * 10) / 10;
-        insightsByWeek[key].meetingsHours = Math.round(insightsByWeek[key].meetingsHours * 10) / 10;
-        insightsByWeek[key].oneOnOneHours = Math.round(insightsByWeek[key].oneOnOneHours * 10) / 10;
-        insightsByWeek[key].recurrentHours = Math.round(insightsByWeek[key].recurrentHours * 10) / 10;
-    }
-
-    console.log('Saving Computed Insights:', insightsByWeek);
-
-    if (chrome && chrome.storage) {
-        chrome.storage.local.set({ caiInsights: insightsByWeek });
     }
 }
 

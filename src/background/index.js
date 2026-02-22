@@ -1,4 +1,5 @@
 import { runScheduler, clearAllCaiEvents } from '../utils/scheduler.js';
+import { fetchWeekInsights } from '../utils/calendar.js';
 
 // Cai Background Service Worker
 
@@ -82,6 +83,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }).catch(err => {
             sendResponse({ success: false, error: err.message });
         });
+        return true;
+    }
+
+    if (message.type === 'FETCH_WEEK_INSIGHTS') {
+        const offset = message.offset || 0;
+        getAuthToken()
+            .then(token => fetchWeekInsights(token, offset))
+            .then(stats => sendResponse({ success: true, stats }))
+            .catch(err => sendResponse({ success: false, error: err.message }));
         return true;
     }
 });

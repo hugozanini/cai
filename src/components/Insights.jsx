@@ -5,34 +5,20 @@ const Insights = () => {
     const [weekOffset, setWeekOffset] = useState(0);
 
     useEffect(() => {
-        if (chrome && chrome.storage) {
-            // Initial fetch
-            chrome.storage.local.get(['caiInsights'], (result) => {
-                if (result.caiInsights && result.caiInsights[weekOffset]) {
-                    setStats(result.caiInsights[weekOffset]);
+        setIsLoading(true);
+        if (chrome && chrome.runtime) {
+            chrome.runtime.sendMessage({ type: 'FETCH_WEEK_INSIGHTS', offset: weekOffset }, (response) => {
+                if (response && response.success) {
+                    setStats(response.stats);
                 } else {
+                    console.error('Failed to fetch insights', response?.error);
                     setStats(getEmptyStats());
                 }
+                setIsLoading(false);
             });
-
-            // Listen for background updates
-            const storageListener = (changes, namespace) => {
-                if (namespace === 'local' && changes.caiInsights?.newValue) {
-                    const newInsights = changes.caiInsights.newValue;
-                    if (newInsights[weekOffset]) {
-                        setStats(newInsights[weekOffset]);
-                    } else {
-                        setStats(getEmptyStats());
-                    }
-                }
-            };
-
-            chrome.storage.onChanged.addListener(storageListener);
-            return () => {
-                chrome.storage.onChanged.removeListener(storageListener);
-            };
         } else {
             setStats(getEmptyStats());
+            setIsLoading(false);
         }
     }, [weekOffset]);
 
@@ -79,7 +65,7 @@ const Insights = () => {
                         className="btn-secondary"
                         style={{ padding: '4px 8px', width: 'auto', opacity: weekOffset === -2 ? 0.5 : 1 }}
                         onClick={handlePrevWeek}
-                        disabled={weekOffset === -2}
+                        disabled={weekOffset === -2 || isLoading}
                     >
                         ←
                     </button>
@@ -90,49 +76,59 @@ const Insights = () => {
                         className="btn-secondary"
                         style={{ padding: '4px 8px', width: 'auto', opacity: weekOffset === 2 ? 0.5 : 1 }}
                         onClick={handleNextWeek}
-                        disabled={weekOffset === 2}
+                        disabled={weekOffset === 2 || isLoading}
                     >
                         →
                     </button>
                 </div>
             </div>
 
-            {/* Meetings Breakdown */}
-            <div className="glass-panel" style={{ padding: '20px', marginBottom: '16px', borderRadius: '12px' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: 'var(--accent-secondary)' }}>Time Breakdown</h3>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8b5cf6' }} />
-                        Focus Time
-                    </span>
-                    <span style={{ fontWeight: 'bold' }}>{stats.focusTimeHours} hrs</span>
+            {isLoading && (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    Fetching exact metadata...
                 </div>
+            )}
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
-                        Total Meetings
-                    </span>
-                    <span style={{ fontWeight: 'bold' }}>{stats.meetingsHours} hrs</span>
-                </div>
+            {!isLoading && (
+                <>
+                    {/* Meetings Breakdown */}
+                    <div className="glass-panel" style={{ padding: '20px', marginBottom: '16px', borderRadius: '12px' }}>
+                        <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: 'var(--accent-secondary)' }}>Time Breakdown</h3>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }} />
-                        1-on-1s
-                    </span>
-                    <span style={{ fontWeight: 'bold' }}>{stats.oneOnOneHours} hrs</span>
-                </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8b5cf6' }} />
+                                Focus Time
+                            </span>
+                            <span style={{ fontWeight: 'bold' }}>{stats.focusTimeHours} hrs</span>
+                        </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
-                        Recurrent Syncs
-                    </span>
-                    <span style={{ fontWeight: 'bold' }}>{stats.recurrentHours} hrs</span>
-                </div>
-            </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
+                                Total Meetings
+                            </span>
+                            <span style={{ fontWeight: 'bold' }}>{stats.meetingsHours} hrs</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }} />
+                                1-on-1s
+                            </span>
+                            <span style={{ fontWeight: 'bold' }}>{stats.oneOnOneHours} hrs</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
+                                Recurrent Syncs
+                            </span>
+                            <span style={{ fontWeight: 'bold' }}>{stats.recurrentHours} hrs</span>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
