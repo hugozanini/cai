@@ -31,9 +31,24 @@ const Planner = () => {
     const saveConfig = () => {
         setIsSaving(true);
         if (chrome && chrome.storage) {
-            chrome.storage.local.set({ caiPreferences: config }, () => {
-                chrome.runtime.sendMessage({ type: 'SYNC_NOW' });
-                setTimeout(() => setIsSaving(false), 500);
+            chrome.storage.local.get(['caiPreferences'], (result) => {
+                const oldConfig = result.caiPreferences;
+
+                // If they reduced the goal, we need to clear events so the scheduler can rebuild
+                const isGoalReduced = oldConfig && Number(config.focusTimeGoal) < Number(oldConfig.focusTimeGoal);
+
+                chrome.storage.local.set({ caiPreferences: config }, () => {
+                    if (isGoalReduced) {
+                        console.log('Focus goal reduced. Clearing events first...');
+                        chrome.runtime.sendMessage({ type: 'CLEAR_EVENTS' }, () => {
+                            chrome.runtime.sendMessage({ type: 'SYNC_NOW' });
+                            setTimeout(() => setIsSaving(false), 500);
+                        });
+                    } else {
+                        chrome.runtime.sendMessage({ type: 'SYNC_NOW' });
+                        setTimeout(() => setIsSaving(false), 500);
+                    }
+                });
             });
         } else {
             setTimeout(() => setIsSaving(false), 500);
