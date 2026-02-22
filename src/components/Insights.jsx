@@ -11,6 +11,20 @@ const Insights = () => {
             chrome.runtime.sendMessage({ type: 'FETCH_WEEK_INSIGHTS', offset: weekOffset }, (response) => {
                 if (response && response.success) {
                     setStats(response.stats);
+
+                    // Auto-sync current week's focus time to the Planner goal
+                    if (weekOffset === 0 && chrome.storage) {
+                        const currentFocusHours = response.stats.focusTimeHours;
+                        const clampedGoal = Math.max(0, Math.min(40, Math.round(currentFocusHours)));
+
+                        chrome.storage.local.get(['caiPreferences'], (result) => {
+                            const prefs = result.caiPreferences || {};
+                            if (prefs.focusTimeGoal !== clampedGoal) {
+                                prefs.focusTimeGoal = clampedGoal;
+                                chrome.storage.local.set({ caiPreferences: prefs });
+                            }
+                        });
+                    }
                 } else {
                     console.error('Failed to fetch insights', response?.error);
                     setStats(getEmptyStats());

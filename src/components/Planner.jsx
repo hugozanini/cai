@@ -127,7 +127,7 @@ const Planner = () => {
                 <input
                     type="range"
                     name="focusTimeGoal"
-                    min="5" max="30" step="1"
+                    min="0" max="40" step="1"
                     value={config.focusTimeGoal}
                     onChange={handleChange}
                     style={{ width: '100%' }}
